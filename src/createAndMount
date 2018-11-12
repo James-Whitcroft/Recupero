@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+
+PTH=/mnt/place
+PARTITION=/dev/sdc1
+DRIVE=/dev/sdc
+
+# The sed script strips off all the comments so that we can 
+# document what we're doing in-line with the actual commands
+# Note that a blank line (commented as "default" will send a empty
+# line terminated with a newline to take the fdisk default.
+sed -e 's/\s*\([\+0-9a-zA-Z]*\).*/\1/' << EOF | fdisk $DRIVE
+    d   # delete partition
+    n   # new partition
+    p   # primary partition
+    1   # partition 1
+        # default - start at beginning of disk 
+        # default - end
+    w   # write the partition table
+    q   # and we're done
+EOF
+
+mkfs.ext2 -I 128 -b 1024 $PARTITION
+
+mount $PARTITION $PTH/
+mount
+for i in `seq 1 10`;
+do
+    mkdir $PTH/$i
+    if ! (( $i % 2 )); then 
+        mkdir $PTH/$i/$i$i
+    fi
+done 
+
+
